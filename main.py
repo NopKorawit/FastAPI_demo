@@ -1,3 +1,4 @@
+import base64
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile
 import io
@@ -24,9 +25,14 @@ def read_item(item_id: int, price: Optional[int] = None):
 
 @app.post("/files/")
 async def create_file(file: bytes = File()):
-    print(type(file))
-    return {"file_size": len(file)}
+    file_type = str(type(file))
+    cv2img = BytetoImg(file)
+    res, base64 = cv2.imencode(".png", cv2img)
+    return {"file_size": len(file),
+            "type":file_type,
+            "base64":str(base64)}
 
+# Upload file to byte convert to base64 and show picture form base64 
 @app.post("/Image/")
 async def create_file(file: bytes = File()):
     cv2img = BytetoImg(file)
@@ -38,9 +44,9 @@ async def create_upload_file(file: UploadFile):
     print(type(file))
     return {"filename": file.filename}
 
-@app.post("/vector_image")
+@app.post("/My_Img")
 def MyImg(*, vector):
-    # Returns a cv2 image array from the document vector
+    # Returns a image from my computer
     cv2img = ReadImg(vector)
     res, im_png = cv2.imencode(".png", cv2img)
     return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
