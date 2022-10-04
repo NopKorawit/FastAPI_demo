@@ -1,10 +1,13 @@
 import base64
 from typing import Optional
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile,Body,Form
 import io
 from starlette.responses import StreamingResponse
 import cv2
-from service import ReadImg ,BytetoImg
+from service import ReadImg ,BytetoImg,stringToRGB
+
+#run app
+#uvicorn main:app --reload --port 8080
 
 app = FastAPI()
 
@@ -51,3 +54,27 @@ def MyImg(*, vector):
     res, im_png = cv2.imencode(".png", cv2img)
     return StreamingResponse(io.BytesIO(im_png.tobytes()), media_type="image/png")
 
+@app.post("/uploadImg")
+def uploadImg(file: UploadFile = File(...)):
+    try:
+        contents = file.file.read()
+        with open(file.filename, 'wb') as f:
+            f.write(contents)
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    finally:
+        file.file.close()
+        
+    return {"message": f"Successfuly uploaded {file.filename}"}
+
+@app.post("/uploadBase64")
+def uploadBase64(filename: str = Form(...), filedata: str = Form(...)):
+    image_as_bytes = str.encode(filedata)  # convert string to bytes
+    img_recovered = base64.b64decode(image_as_bytes)  # decode base64string
+    try:
+        with open("uploaded_" + filename, "wb") as f:
+            f.write(img_recovered)
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+        
+    return {"message": f"Successfuly uploaded {filename}"} 
