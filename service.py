@@ -13,9 +13,10 @@ def ReadImg(a):
 
 # Take in base64 string and return cv image
 def stringToRGB(base64_string):
-    imgdata = base64.b64decode(str(base64_string))
+    imgdata = base64.b64decode(base64_string)
     img = Image.open(io.BytesIO(imgdata))
-    opencv_img= cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
+    # opencv_img= cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
+    opencv_img= cv2.cvtColor(np.array(img), cv2.IMREAD_COLOR)
     return opencv_img 
 
 def BytetoImg(byte):

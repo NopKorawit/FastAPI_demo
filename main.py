@@ -5,6 +5,7 @@ import io
 from starlette.responses import StreamingResponse
 import cv2
 from service import ReadImg ,BytetoImg,stringToRGB
+from matplotlib import pyplot as plt
 
 #run app
 #uvicorn main:app --reload --port 8080
@@ -67,8 +68,8 @@ def uploadImg(file: UploadFile = File(...)):
         
     return {"message": f"Successfuly uploaded {file.filename}"}
 
-@app.post("/uploadBase64")
-def uploadBase64(filename: str = Form(...), filedata: str = Form(...)):
+@app.post("/uploadBase64save")
+def uploadBase64save(filename: str = Form(...), filedata: str = Form(...)):
     image_as_bytes = str.encode(filedata)  # convert string to bytes
     img_recovered = base64.b64decode(image_as_bytes)  # decode base64string
     try:
@@ -78,3 +79,12 @@ def uploadBase64(filename: str = Form(...), filedata: str = Form(...)):
         return {"message": "There was an error uploading the file"}
         
     return {"message": f"Successfuly uploaded {filename}"} 
+
+@app.post("/uploadBase64")
+def uploadBase64(filedata: str = Form(...)):
+    image_as_bytes = str.encode(filedata)  # convert string to bytes
+    img_recovered = stringToRGB(image_as_bytes)  # decode base64string
+    print(img_recovered)
+    plt.imshow(img_recovered, 'gray'),plt.show()
+    return {"message": "Successfuly uploaded",
+            "type": str(type(img_recovered))} 
