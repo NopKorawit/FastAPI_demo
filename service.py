@@ -24,3 +24,8 @@ def BytetoImg(byte):
     Image = cv2.imdecode(np.fromstring(base64.b64decode(
                 base64EncodedStr, validate=True), np.uint8), cv2.IMREAD_COLOR)
     return Image
+
+def processImage(img):
+    kernel = np.ones((2,2),np.uint8)
+    image = cv2.dilate(img, kernel, iterations=1)
+    return image

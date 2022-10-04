@@ -4,8 +4,9 @@ from fastapi import FastAPI, File, UploadFile,Body,Form
 import io
 from starlette.responses import StreamingResponse
 import cv2
-from service import ReadImg ,BytetoImg,stringToRGB
+from service import ReadImg ,BytetoImg,stringToRGB,processImage
 from matplotlib import pyplot as plt
+import numpy as np
 
 #run app
 #uvicorn main:app --reload --port 8080
@@ -88,3 +89,23 @@ def uploadBase64(filedata: str = Form(...)):
     plt.imshow(img_recovered, 'gray'),plt.show()
     return {"message": "Successfuly uploaded",
             "type": str(type(img_recovered))} 
+
+@app.post("/returnImg")
+async def returnImg(file: UploadFile = File(...)):
+    contents = await file.read()
+    nparr = np.fromstring(contents, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img_dimensions = str(img.shape)
+    return_img = processImage(img)
+
+    # line that fixed it
+    _, encoded_img = cv2.imencode('.PNG', return_img)
+
+    encoded_img = base64.b64encode(encoded_img)
+
+    return{
+        "filename": file.filename,
+        "dimensions": img_dimensions,
+        "encoded_img": encoded_img
+    }
