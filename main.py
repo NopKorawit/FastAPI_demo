@@ -7,6 +7,7 @@ import cv2
 from service import ReadImg ,BytetoImg,stringToRGB,processImage
 from matplotlib import pyplot as plt
 import numpy as np
+from pydantic import BaseModel
 
 #run app
 #uvicorn main:app --reload --port 8080
@@ -99,9 +100,7 @@ async def returnImg(file: UploadFile = File(...)):
     img_dimensions = str(img.shape)
     return_img = processImage(img)
 
-    # line that fixed it
     _, encoded_img = cv2.imencode('.PNG', return_img)
-
     encoded_img = base64.b64encode(encoded_img)
 
     return{
@@ -109,3 +108,14 @@ async def returnImg(file: UploadFile = File(...)):
         "dimensions": img_dimensions,
         "encoded_img": encoded_img
     }
+
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+@app.post("/items/")
+async def create_item(item: Item):
+    print(item.name+item.description)
+    return item
